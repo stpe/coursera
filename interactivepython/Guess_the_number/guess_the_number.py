@@ -36,6 +36,11 @@ def range1000():
 def input_guess(guess):
     # main game logic goes here
     global guesses
+    
+    if not guess.isdigit():
+        print "Guess must be a number. Please try again."
+        return
+    
     guesses = guesses - 1
     
     if int(guess) > secret:
