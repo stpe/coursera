@@ -29,7 +29,7 @@ cards_in_play = [-1, -1]
 turns = 0
 
 def init():
-    global exposed
+    global exposed, turns
     random.shuffle(cards)
     exposed = [False] * len(cards)
     turns = 0
