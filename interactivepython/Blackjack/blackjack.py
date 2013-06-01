@@ -17,6 +17,10 @@ in_play = False
 outcome = ""
 score = 0
 
+deck = 0
+dealer = 0
+player = 0
+
 # define globals for cards
 SUITS = ('C', 'S', 'H', 'D')
 RANKS = ('A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
@@ -51,46 +55,87 @@ class Card:
 # define hand class
 class Hand:
     def __init__(self):
-        pass    # create Hand object
+        # create Hand object
+        self.hand = []
 
     def __str__(self):
-        pass    # return a string representation of a hand
+        # return a string representation of a hand
+        result = []
+        for card in self.hand:
+            result.append(str(card))
+
+        return " ".join(result)
 
     def add_card(self, card):
-        pass    # add a card object to a hand
+        # add a card object to a hand
+        self.hand.append(card)
 
     def get_value(self):
         # count aces as 1, if the hand has an ace, then add 10 to hand value if it doesn't bust
-        pass    # compute the value of the hand, see Blackjack video
+        result = 0
+        for card in self.hand:
+            result += VALUES[result]
+
+        if 'A' in self.hand and result + 10 <= 21:
+            result += 10
+            
+        return result
    
     def draw(self, canvas, pos):
-        pass    # draw a hand on the canvas, use the draw method for cards
- 
+        offset = 0
+        for i in range(0, len(self.hand)):
+            card.draw(canvas, (pos[0] + i * CARD_SIZE[0], pos[1]))
+             
         
 # define deck class 
 class Deck:
     def __init__(self):
-        pass    # create a Deck object
+        self.shuffle()
 
     def shuffle(self):
         # add cards back to deck and shuffle
-        pass    # use random.shuffle() to shuffle the deck
+        self.deck = []
+        for suit in SUITS:
+            for rank in RANKS:
+                self.deck.append(Card(suit, rank))
 
+        random.shuffle(self.deck)
+        
     def deal_card(self):
-        pass    # deal a card object from the deck
+        # deal a card object from the deck
+        return self.deck.pop()
     
     def __str__(self):
-        pass    # return a string representing the deck
+        # return a string representing the deck
+        result = []
+        for card in self.deck:
+            result.append(str(card))
 
+        return "Length: " + str(len(result)) + ": " + ", ".join(result)
 
 
 #define event handlers for buttons
 def deal():
-    global outcome, in_play
+    global outcome, in_play, deck, dealer, player
 
-    # your code goes here
-    
     in_play = True
+
+    print "Deal..."
+    
+    deck = Deck()
+    player = Hand()
+    dealer = Hand()
+
+    print deck
+    
+    player.add_card(deck.deal_card());
+    player.add_card(deck.deal_card());
+    dealer.add_card(deck.deal_card());
+    dealer.add_card(deck.deal_card());
+    
+    print "Dealer", dealer
+    print "Player", player
+    print deck
 
 def hit():
     pass    # replace with your code below
