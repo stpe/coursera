@@ -16,14 +16,15 @@ card_back = simplegui.load_image("http://commondatastorage.googleapis.com/codesk
 in_play = False
 outcome = ""
 score = 0
+rounds = 0
 
 # define globals for cards
 SUITS = ('C', 'S', 'H', 'D')
 RANKS = ('A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
 VALUES = {'A':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, 'T':10, 'J':10, 'Q':10, 'K':10}
 
-DEALER_CARD_POS = [20, 50]
-PLAYER_CARD_POS = [20, 250]
+DEALER_CARD_POS = [20, 120]
+PLAYER_CARD_POS = [20, 340]
 
 
 # define card class
@@ -74,8 +75,8 @@ class Hand:
         result = 0
         for card in self.hand:
             result += VALUES[card.get_rank()]
-
-        if 'A' in self.hand and result + 10 <= 21:
+            
+        if [c for c in self.hand if c.get_rank() == "A"] and result + 10 <= 21:
             result += 10
             
         return result
@@ -118,13 +119,17 @@ class Deck:
 
 #define event handlers for buttons
 def deal():
-    global outcome, in_play, deck, dealer, player
+    global outcome, in_play, deck, dealer, player, rounds
 
-    in_play = True
+    if in_play:
+        outcome = "You lost. New round - hit or stand?"
+    else:
+        in_play = True
+        outcome = "Hit or Stand?"
 
-    outcome = "Hit or Stand?"
-    
-    deck = Deck()
+    rounds += 1
+        
+    deck.shuffle()
     player = Hand()
     dealer = Hand()
     
@@ -132,22 +137,17 @@ def deal():
     player.add_card(deck.deal_card());
     dealer.add_card(deck.deal_card());
     dealer.add_card(deck.deal_card());
-    
-    print "Dealer", dealer
-    print "Player", player
 
 def hit():
-    global in_play
+    global in_play, outcome
     
     if in_play:
         # if the hand is in play, hit the player
         player.add_card(deck.deal_card())
-        print "Player", player
             
         # if busted, assign a message to outcome, update in_play and score
         if player.is_busted():
             outcome = "You have busted."
-            # score?
             in_play = False
    
        
@@ -161,15 +161,17 @@ def stand():
         # if hand is in play, repeatedly hit dealer until his hand has value 17 or more
         while dealer.get_value() < 17:
             dealer.add_card(deck.deal_card())
-            print "Dealer", dealer
    
         in_play = False
         
         # assign a message to outcome, update in_play and score
         if dealer.is_busted():
             outcome = "Dealer have busted."
-        elif player.get_value() <= dealer.get_value():
+            score += 1
+        elif player.get_value() < dealer.get_value():
             outcome = "Dealer won."
+        elif player.get_value() == dealer.get_value():
+            outcome = "Tie! Dealer won."
         else:
             outcome = "Player won."
             score += 1
@@ -178,28 +180,27 @@ def stand():
 # draw handler    
 def draw(canvas):
     # draw title
-    canvas.draw_text("Black Jack", [90, 30], 24, "Yellow")
+    canvas.draw_text("Black Jack", [200, 40], 42, "Yellow")
     
     # draw outcome
     msg = outcome
     if not in_play:
         msg += " New deal?"
-    canvas.draw_text(msg, [20, 200], 24, "White")
+    canvas.draw_text(msg, [20, 270], 32, "White")
     
     # draw cards
     dealer.draw(canvas, DEALER_CARD_POS)
     player.draw(canvas, PLAYER_CARD_POS)
 
-    if in_play:
-        canvas.draw_text("In play", [0, 10], 12, "White")
-    else:
-        canvas.draw_text("Not in play", [0, 10], 12, "Yellow")
-        
+    canvas.draw_text("Dealer", [DEALER_CARD_POS[0], DEALER_CARD_POS[1] - 16], 24, "Black")
+    canvas.draw_text("Player", [PLAYER_CARD_POS[0], PLAYER_CARD_POS[1] - 16], 24, "Black")
+
+    # draw score
+    canvas.draw_text("Wins: " + str(score) + ", Rounds: " + str(rounds), [220, 80], 18, "Yellow")
+
     # if in play, hide dealer's hole card
     if in_play:
-        canvas.draw_image(card_back, [0,0], CARD_BACK_SIZE, CARD_BACK_CENTER, CARD_BACK_SIZE)
-        
-    
+        canvas.draw_image(card_back, CARD_BACK_CENTER, CARD_BACK_SIZE, [DEALER_CARD_POS[0] + CARD_BACK_CENTER[0], DEALER_CARD_POS[1] + CARD_BACK_CENTER[1]], CARD_BACK_SIZE)
     
 
 # initialization frame
@@ -212,6 +213,7 @@ frame.add_button("Hit",  hit, 200)
 frame.add_button("Stand", stand, 200)
 frame.set_draw_handler(draw)
 
+# init
 deck = Deck()
 dealer = Hand()
 player = Hand()
