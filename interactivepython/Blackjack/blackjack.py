@@ -17,14 +17,13 @@ in_play = False
 outcome = ""
 score = 0
 
-deck = 0
-dealer = 0
-player = 0
-
 # define globals for cards
 SUITS = ('C', 'S', 'H', 'D')
 RANKS = ('A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
 VALUES = {'A':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, 'T':10, 'J':10, 'Q':10, 'K':10}
+
+DEALER_CARD_POS = [20, 50]
+PLAYER_CARD_POS = [20, 250]
 
 
 # define card class
@@ -51,7 +50,7 @@ class Card:
         card_loc = (CARD_CENTER[0] + CARD_SIZE[0] * RANKS.index(self.rank), 
                     CARD_CENTER[1] + CARD_SIZE[1] * SUITS.index(self.suit))
         canvas.draw_image(card_images, card_loc, CARD_SIZE, [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]], CARD_SIZE)
-        
+
 # define hand class
 class Hand:
     def __init__(self):
@@ -87,7 +86,7 @@ class Hand:
     def draw(self, canvas, pos):
         offset = 0
         for i in range(0, len(self.hand)):
-            card.draw(canvas, (pos[0] + i * CARD_SIZE[0], pos[1]))
+            self.hand[i].draw(canvas, (pos[0] + i * (CARD_SIZE[0] + 10), pos[1]))
              
         
 # define deck class 
@@ -123,7 +122,7 @@ def deal():
 
     in_play = True
 
-    print "Deal..."
+    outcome = "Hit or Stand?"
     
     deck = Deck()
     player = Hand()
@@ -147,16 +146,15 @@ def hit():
             
         # if busted, assign a message to outcome, update in_play and score
         if player.is_busted():
-            print "You have busted"
+            outcome = "You have busted."
             # score?
             in_play = False
    
        
 def stand():
-    global in_play, score
+    global in_play, score, outcome
     
     if player.is_busted():
-        print "You have busted"
         return
 
     if in_play:        
@@ -169,21 +167,40 @@ def stand():
         
         # assign a message to outcome, update in_play and score
         if dealer.is_busted():
-            print "Dealer have busted"
+            outcome = "Dealer have busted."
         elif player.get_value() <= dealer.get_value():
-            print "Dealer won"
+            outcome = "Dealer won."
         else:
-            print "Player won"
+            outcome = "Player won."
             score += 1
            
 
 # draw handler    
 def draw(canvas):
-    # test to make sure that card.draw works, replace with your code below
+    # draw title
+    canvas.draw_text("Black Jack", [90, 30], 24, "Yellow")
     
-    card = Card("S", "A")
-    card.draw(canvas, [300, 300])
+    # draw outcome
+    msg = outcome
+    if not in_play:
+        msg += " New deal?"
+    canvas.draw_text(msg, [20, 200], 24, "White")
+    
+    # draw cards
+    dealer.draw(canvas, DEALER_CARD_POS)
+    player.draw(canvas, PLAYER_CARD_POS)
 
+    if in_play:
+        canvas.draw_text("In play", [0, 10], 12, "White")
+    else:
+        canvas.draw_text("Not in play", [0, 10], 12, "Yellow")
+        
+    # if in play, hide dealer's hole card
+    if in_play:
+        canvas.draw_image(card_back, [0,0], CARD_BACK_SIZE, CARD_BACK_CENTER, CARD_BACK_SIZE)
+        
+    
+    
 
 # initialization frame
 frame = simplegui.create_frame("Blackjack", 600, 600)
@@ -195,9 +212,9 @@ frame.add_button("Hit",  hit, 200)
 frame.add_button("Stand", stand, 200)
 frame.set_draw_handler(draw)
 
+deck = Deck()
+dealer = Hand()
+player = Hand()
 
 # get things rolling
 frame.start()
-
-
-# remember to review the gradic rubric
