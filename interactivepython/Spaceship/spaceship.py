@@ -10,6 +10,11 @@ score = 0
 lives = 3
 time = 0.5
 
+# game constants
+SHIP_TURN_VEL = 0.1
+SHIP_THRUST_ACC = 0.15
+SHIP_FRICTION = 0.99
+
 class ImageInfo:
     def __init__(self, center, size, radius = 0, lifespan = None, animated = False):
         self.center = center
@@ -101,18 +106,20 @@ class Ship:
         canvas.draw_image(self.image, image_center, self.image_size, self.pos, self.image_size, self.angle)
 
     def update(self):
-        self.pos[0] += self.vel[0]
-        self.pos[1] += self.vel[1]
+        self.pos[0] = (self.pos[0] + self.vel[0]) % WIDTH
+        self.pos[1] = (self.pos[1] + self.vel[1]) % HEIGHT
         self.angle += self.angle_vel
 
+        self.vel[0] *= SHIP_FRICTION
+        self.vel[1] *= SHIP_FRICTION
+        
         if self.thrust:
-            vec = angle_to_vector(self.angle)
-            self.vel[0] += 0.2 * vec[0]
-            self.vel[1] += 0.2 * vec[1]
+            forward_acc_vec = angle_to_vector(self.angle)
+            self.vel[0] += SHIP_THRUST_ACC * forward_acc_vec[0]
+            self.vel[1] += SHIP_THRUST_ACC * forward_acc_vec[1]
         
     def turn(self, dir):
-        # change const to alter turning velocity
-        self.angle_vel = dir * 0.1
+        self.angle_vel = dir * SHIP_TURN_VEL
             
     def toggle_thrust(self, enabled):
         self.thrust = enabled
