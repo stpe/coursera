@@ -1,4 +1,5 @@
-# program template for Spaceship
+# Spaceship
+# https://class.coursera.org/interactivepython-002/human_grading/view/courses/970391/assessments/34/submissions
 import simplegui
 import math
 import random
@@ -16,6 +17,7 @@ SHIP_THRUST_ACC = 0.15
 SHIP_FRICTION = 0.99
 ROCK_ANG_VEL_INTERVAL = 0.15
 ROCK_VEL_INTERVAL = 2
+MISSILE_VEL_FACTOR = 5
     
 class ImageInfo:
     def __init__(self, center, size, radius = 0, lifespan = None, animated = False):
@@ -127,11 +129,18 @@ class Ship:
         self.thrust = enabled
 
         if enabled:
-            
             ship_thrust_sound.play()
         else:
             ship_thrust_sound.rewind()
-            
+
+    def shoot(self):
+        global a_missile
+
+        forward_acc_vec = angle_to_vector(self.angle)
+        missile_pos = [self.pos[0] + (ship_info.get_radius() + 5) * forward_acc_vec[0], self.pos[1] + (ship_info.get_radius() + 5) * forward_acc_vec[1]]
+        missile_vel = [self.vel[0] + MISSILE_VEL_FACTOR * forward_acc_vec[0], self.vel[1] + MISSILE_VEL_FACTOR * forward_acc_vec[1]]
+        
+        a_missile = Sprite(missile_pos, missile_vel, self.angle, 0, missile_image, missile_info, missile_sound)
     
 # Sprite class
 class Sprite:
@@ -174,6 +183,10 @@ def draw(canvas):
     canvas.draw_image(debris_image, [size[0] - wtime, center[1]], [2 * wtime, size[1]], 
                                 [1.25 * wtime, HEIGHT / 2], [2.5 * wtime, HEIGHT])
 
+    # ui
+    canvas.draw_text("Lives: " + str(lives), (110, 25), 24, "Green", "monospace")
+    canvas.draw_text("Score: " + str(score), (580, 25), 24, "Green", "monospace")
+    
     # draw ship and sprites
     my_ship.draw(canvas)
     a_rock.draw(canvas)
@@ -206,7 +219,7 @@ def keydown_handler(key):
         my_ship.toggle_thrust(True)
     elif key == simplegui.KEY_MAP["space"]:
         # shoot
-        pass
+        my_ship.shoot()
 
 def keyup_handler(key):
     if key == simplegui.KEY_MAP["left"] or key == simplegui.KEY_MAP["right"]:
