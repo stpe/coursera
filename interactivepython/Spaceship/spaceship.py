@@ -14,7 +14,9 @@ time = 0.5
 SHIP_TURN_VEL = 0.1
 SHIP_THRUST_ACC = 0.15
 SHIP_FRICTION = 0.99
-
+ROCK_ANG_VEL_INTERVAL = 0.15
+ROCK_VEL_INTERVAL = 2
+    
 class ImageInfo:
     def __init__(self, center, size, radius = 0, lifespan = None, animated = False):
         self.center = center
@@ -153,8 +155,8 @@ class Sprite:
         canvas.draw_image(self.image, self.image_center, self.image_size, self.pos, self.image_size, self.angle)
                 
     def update(self):
-        self.pos[0] += self.vel[0]
-        self.pos[1] += self.vel[1]
+        self.pos[0] = (self.pos[0] + self.vel[0]) % WIDTH
+        self.pos[1] = (self.pos[1] + self.vel[1]) % HEIGHT
         self.angle += self.angle_vel
 
            
@@ -184,7 +186,13 @@ def draw(canvas):
             
 # timer handler that spawns a rock    
 def rock_spawner():
-    pass
+    global a_rock
+        
+    pos = [random.randrange(0, WIDTH), random.randrange(0, HEIGHT)]
+    vel = [-ROCK_VEL_INTERVAL + random.random() * 2*ROCK_VEL_INTERVAL, -ROCK_VEL_INTERVAL + random.random() * 2*ROCK_VEL_INTERVAL]
+    ang_vel = -ROCK_ANG_VEL_INTERVAL + random.random() * 2*ROCK_ANG_VEL_INTERVAL
+    
+    a_rock = Sprite(pos, vel, 0, ang_vel, asteroid_image, asteroid_info)
 
 def keydown_handler(key):
     if key == simplegui.KEY_MAP["left"]:
