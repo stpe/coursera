@@ -243,8 +243,8 @@ def draw(canvas):
                                 [1.25 * wtime, HEIGHT / 2], [2.5 * wtime, HEIGHT])
 
     # ui
-    canvas.draw_text("Lives: " + str(lives), (110, 25), 24, "Green", "monospace")
-    canvas.draw_text("Score: " + str(score), (580, 25), 24, "Green", "monospace")
+    canvas.draw_text("Lives: " + str(lives), (110, 25), 24, "#00FF00", "monospace")
+    canvas.draw_text("Score: " + str(score), (580, 25), 24, "#00FF00", "monospace")
     
     # ship
     my_ship.draw(canvas)
