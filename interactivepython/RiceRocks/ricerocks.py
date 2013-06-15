@@ -170,7 +170,12 @@ class Sprite:
             sound.play()
    
     def draw(self, canvas):
-        canvas.draw_image(self.image, self.image_center, self.image_size, self.pos, self.image_size, self.angle)
+        center = self.image_center
+        
+        if self.animated:
+            center = [center[0] + self.image_size[0] * self.age, center[1]]
+
+        canvas.draw_image(self.image, center, self.image_size, self.pos, self.image_size, self.angle)
                 
     def update(self):
         self.pos[0] = (self.pos[0] + self.vel[0]) % WIDTH
@@ -193,6 +198,8 @@ class Sprite:
     def get_position(self):
         return self.pos
 
+    def get_velocity(self):
+        return self.vel
 
 def process_sprite_group(group, canvas):
     for sprite in set(group):
@@ -206,6 +213,9 @@ def group_collide(group, other_object):
     for obj in set(group):
         if obj.collide(other_object):
             group.remove(obj)
+            
+            explosion_group.add(Sprite(obj.get_position(), obj.get_velocity(), 0, 0, explosion_image, explosion_info, explosion_sound))
+
             collisions += 1
             explosion_sound.play()
 
@@ -226,6 +236,8 @@ def start():
     lives = 3
     score = 0
     started = True
+    soundtrack.rewind()
+    soundtrack.play()
 
     
 def draw(canvas):
@@ -252,6 +264,7 @@ def draw(canvas):
 
     process_sprite_group(missile_group, canvas)
     process_sprite_group(rock_group, canvas)
+    process_sprite_group(explosion_group, canvas)
     
     score += group_group_collide(missile_group, rock_group)
     
@@ -260,6 +273,7 @@ def draw(canvas):
     
     if lives == 0:
         started = False
+        soundtrack.pause()
         rock_group = set()
     
     if not started:
@@ -324,6 +338,7 @@ my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info)
 
 rock_group = set()
 missile_group = set()
+explosion_group = set()
 
 # register handlers
 frame.set_draw_handler(draw)
